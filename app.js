@@ -3,7 +3,12 @@ document.getElementById('get-location').addEventListener('click', function() {
         navigator.geolocation.getCurrentPosition(function(position) {
             const latitude = position.coords.latitude;
             const longitude = position.coords.longitude;
+            
+            // 位置情報を表示
             document.getElementById('location').textContent = `緯度: ${latitude}, 経度: ${longitude}`;
+            
+            // 逆ジオコーディングを使って住所を取得
+            getAddressFromCoordinates(latitude, longitude);
         }, function(error) {
             document.getElementById('location').textContent = '位置情報を取得できませんでした。';
         });
@@ -12,11 +17,17 @@ document.getElementById('get-location').addEventListener('click', function() {
     }
 });
 
-// Service Workerの登録
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js').then(function(registration) {
-        console.log('Service Worker登録成功:', registration);
-    }).catch(function(error) {
-        console.log('Service Worker登録失敗:', error);
-    });
+// 逆ジオコーディングの関数
+function getAddressFromCoordinates(latitude, longitude) {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`;
+
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            const address = data.display_name; // 住所
+            document.getElementById('address').textContent = `住所: ${address}`;
+        })
+        .catch(error => {
+            document.getElementById('address').textContent = '住所の取得に失敗しました。';
+        });
 }
